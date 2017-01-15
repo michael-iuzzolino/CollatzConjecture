@@ -38,10 +38,19 @@ function startIndividual(starting_number, plot=false)
       individual_history, index_gen;
   
   converged = false;
+  
+  // Check trivial case of starting number == 1
+  if (starting_number == 1)
+  {
+    return 0;
+  }
+  
   individual_history = [starting_number];
   index_gen = 0
   while (!converged)
   {
+    
+    
     // Define current number
     number = individual_history[index_gen];
 
@@ -173,13 +182,14 @@ function updateMultiVis(history)
       .attr("y", function(solution_time, number){ return MULTI_SVG_HEIGHT; })
       .text( function (solution_time, number) 
       { 
-        var factor = Math.floor(Math.exp((max_bound / (100))));
-        if (factor < 1)
+        if (max_bound < 100)
         {
           return number;
         }
         else
         {
+          var factor = Math.floor(max_bound * 0.1);
+        
           if (number % factor == 0)
           {
             return number;
@@ -281,7 +291,7 @@ function updateMultiVis(history)
         // Tooltip
         tooltip.html( function ()
             {
-              return "Number: " + (number+1) + "; Solution Time: " + solution_time;
+              return "Number: " + number + "; Solution Time: " + solution_time;
             })
             .style("left", function()
             {
@@ -519,6 +529,7 @@ function updateSingleVis(individual_history, solution_time)
                 return (SINGLE_SVG_WIDTH / 2 - text_width) +"px";
               });
   
+  
   // X axis label transition
   d3.select("#x_label").transition()
     .duration(EASE_DURATION*1.7)
@@ -537,7 +548,24 @@ function updateSingleVis(individual_history, solution_time)
       {
         return SINGLE_SVG_HEIGHT;
       })
-      .text( function (d, i) { return i; })
+      
+      .text( function (number, time_step) 
+      { 
+        if (solution_time < 100)
+        {
+          return time_step;
+        }
+        else
+        {
+          var factor = Math.floor(solution_time * 0.1);
+        
+          if (time_step % factor == 0)
+          {
+            return time_step;
+          }
+        }
+      })
+//      .text( function (d, i) { return i; })
       .style("font-size", "10px")
       .on("mouseover", function(d, i)
       { 
