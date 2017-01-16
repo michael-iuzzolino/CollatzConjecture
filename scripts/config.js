@@ -8,7 +8,7 @@ var mainContainer, controlsContainer,
 
 
 var plot_multiple_single_plot = false;
-var DEFAULT_MAX_BOUND = 10;
+var DEFAULT_MAX_BOUND = 100;
 var max_bound;
 var single_plot_active = false;
 
@@ -23,6 +23,7 @@ var MULTI_SVG_WIDTH = 600;
 
 
 var X_OFFSET = 20;
+var Y_OFFSET = 20;
 var CIRCLE_R = 10;
 var R_EXPAND_FACTOR = 1.75;
 
