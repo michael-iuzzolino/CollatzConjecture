@@ -8,11 +8,11 @@ var mainContainer, controlsContainer,
 
 
 var plot_multiple_single_plot = false;
-var DEFAULT_MAX_BOUND = 100;
+var DEFAULT_MAX_BOUND = 250;
 var max_bound;
 var single_plot_active = false;
 
-
+var new_num = function(number) { return number*step_size; };
 var SINGLE_SVG_HEIGHT = 400;
 var SINGLE_SVG_WIDTH = 600;
 var MULTI_SVG_HEIGHT = 400;
@@ -30,6 +30,13 @@ var R_EXPAND_FACTOR = 1.75;
 var FADE_IN_TIME = 1000;
 var DEFAULT_SPEED_FACTOR = 0.75;
 var speed_factor;
+
+
+var DEFAULT_STEP_SIZE = 1
+var step_size;
+
+var DEFAULT_STEP_FACTOR = 1
+var step_factor;
 
 var control_container_height;
 var BACKGROUND_COLOR = "#f2f2f2";

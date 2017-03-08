@@ -145,6 +145,17 @@ function setupControls()
                       max_bound = this.value;
                     });
   
+  // Step Size
+  controlsContainer.append("p").html("Size Size: ")
+                    .append("input")
+                    .attr("type", "number")
+                    .attr("value", step_size)
+                    .attr("min", 1)
+                    .on("change", function()
+                    {
+                      step_size = parseInt(this.value);
+                    });
+  
   // Speed Factor
   controlsContainer.append("p").html("Speed Factor: ")
                     .append("input")
@@ -167,6 +178,7 @@ function setupControls()
 function clearIndividualPlot()
 {
   updateSinglePlot(false);
+  d3.selectAll(".single_plot_label").remove();
   d3.selectAll(".data_circle").remove();
   d3.selectAll(".data_text").remove();
   d3.selectAll("#starting_number_label").remove();
@@ -176,6 +188,9 @@ function clearIndividualPlot()
 function clearAllPlots()
 {
   updateSinglePlot(false);
+  
+  d3.selectAll(".multi_plot_label").remove();
+  d3.selectAll(".single_plot_label").remove();
   d3.selectAll(".time_solution_circle").remove();
   d3.selectAll(".time_solution_text").remove();
   d3.selectAll(".data_circle").remove();
@@ -189,6 +204,8 @@ function initializeConstants()
 {
   single_plot_active = false;
   max_bound = DEFAULT_MAX_BOUND;
+  step_size = DEFAULT_STEP_SIZE;
+  step_factor = DEFAULT_STEP_FACTOR;
   speed_factor = DEFAULT_SPEED_FACTOR;
 }
 

@@ -11,14 +11,11 @@ function startMultiple()
   // Iterate through i = 1 to i = max bound
   var history, solution_time;
   
-  
   history = [0];
-  for (var number=1; number < max_bound; number++)
+  for (var number=1; number < max_bound; number += step_size)
   {
     solution_time = startIndividual(number);
-    
     history.push(solution_time);
-    
   }
   updateMultiVis(history);
 }
@@ -93,6 +90,7 @@ function updateMultiVis(history)
   var current_object;
   var new_x, new_y;
   
+  
   var this_object, text_width, text_height;
   
   control_container_height = parseInt(controlsContainer[0][0].clientHeight);
@@ -101,12 +99,12 @@ function updateMultiVis(history)
   
   
   xScale = d3.scale.ordinal()
-                .domain(d3.range(0, history.length))
+                .domain(d3.range(0, new_num(history.length)))
                 .rangeBands([0, MULTI_SVG_WIDTH*0.9]);
   
   yScale = d3.scale.linear()
                 .domain([0, d3.max(history)])
-                .range([0, MULTI_SVG_HEIGHT*0.9]);
+                .range([MULTI_SVG_HEIGHT*0.05, MULTI_SVG_HEIGHT*0.9]);
   
  
   colorScale = d3.scale.linear()
@@ -120,16 +118,16 @@ function updateMultiVis(history)
 
   
   
-  
-  
-  
+  var yAxisScale = d3.scale.ordinal()
+              .domain(d3.range(1, d3.max(history)+1))
+              .rangeBands([MULTI_SVG_HEIGHT*0.05, MULTI_SVG_HEIGHT*0.9]);
   
   
   
   
   // X axis label
   multiVisContainer.append("div")
-              .attr("id", "multi_x_label")
+              .attr("class", "multi_plot_label")
               .style("opacity", "0")
               .text("Number")
               .style("font-size", "16px")   
@@ -148,7 +146,7 @@ function updateMultiVis(history)
   
   
   // X axis label transition
-  d3.select("#multi_x_label").transition()
+  d3.select(".multi_plot_label").transition()
     .duration(EASE_DURATION*1.7)
     .style("opacity", "1")
   
@@ -159,26 +157,27 @@ function updateMultiVis(history)
       .data(history).enter()
       .append("text")
       .style("opacity", "0")
-      .attr("class", "x_label_text")
-      .attr("x", function(solution_time, number) { return xScale(number) + X_OFFSET*0.7;})
-      .attr("y", function(solution_time, number){ return MULTI_SVG_HEIGHT; })
+      .attr("class", "multi_plot_label")
+      .attr("x", function(solution_time, number) { return xScale(new_num(number)) + X_OFFSET*0.7;})
+      .attr("y", function(){ return MULTI_SVG_HEIGHT*0.995; })
       .text( function (solution_time, number) 
       { 
         if (max_bound < 100)
         {
-          return number;
+          return new_num(number);
         }
         else
         {
           var factor = Math.floor(max_bound * 0.1);
-        
+          
           if (number % factor == 0)
           {
-            return number;
+            
+            return new_num(number);
           }
         }
       })
-      .style("font-size", "10px")
+      .style("font-size", "12px")
   
   
   // X label text Transitions
@@ -192,6 +191,7 @@ function updateMultiVis(history)
   // Y axis label
   multiVisContainer.append("div")
               .attr("id", "multi_y_label")
+              .attr("class", "multi_plot_label")
               .style("opacity", "0")
               .text("Solution Time")
               .style("font-size", "16px")   
@@ -208,6 +208,54 @@ function updateMultiVis(history)
   d3.select("#multi_y_label").transition()
     .duration(EASE_DURATION*1.7)
     .style("opacity", "1")
+  
+  
+  
+  
+  //  Y label text
+  var y_axis_numbers = [];
+  var max_y = Math.ceil(d3.max(history));
+  for (var i=0; i <= max_y; i++)
+  {
+    y_axis_numbers.push(i);
+  }
+  
+  var xLabelContainer = multiSVGContainer.append("g").selectAll("text")
+      .data(y_axis_numbers).enter()
+      .append("text")
+      .style("opacity", "0")
+      .attr("class", "multi_plot_label")
+      .attr("x", function() { return MULTI_SVG_WIDTH - X_OFFSET*1.4; })
+      .attr("y", function(solution_time, number)
+      { 
+        return MULTI_SVG_HEIGHT - yAxisScale(solution_time) - Y_OFFSET*1.1;
+      })
+      .text( function (solution_time, number) 
+      { 
+        if (d3.max(y_axis_numbers) < 100)
+        {
+          return solution_time;
+        }
+        else
+        {
+          var factor = Math.floor(d3.max(history) * 0.1);
+          
+          if (solution_time % factor == 0)
+          {
+            return solution_time;
+          }
+        }
+      })
+      .style("font-size", "12px")
+  
+  
+  // Y label text Transitions
+  xLabelContainer.transition()
+    .duration(EASE_DURATION*1.6)
+    .style("opacity", "1");
+  
+  
+  
   
   
   
@@ -235,15 +283,15 @@ function updateMultiVis(history)
       .append("circle")
       .attr("class", "time_solution_circle")
       .style("opacity", "0")
-      .style("fill", function(solution_time, number) 
+      .style("fill", function(solution_time) 
       {
         return colorScale(solution_time);
       })
-      .attr("cx", function(solution_time, number)
+      .attr("cx", function(solution_time)
       {
         return 0;
       })
-      .attr("cy", function(solution_time, number)
+      .attr("cy", function(solution_time)
       {
         return MULTI_SVG_HEIGHT - yScale(solution_time) - CIRCLE_R;
       })
@@ -256,7 +304,8 @@ function updateMultiVis(history)
           clearIndividualPlot();  
         }
         updateSinglePlot(true);
-        startIndividual(number, true);  
+        
+        startIndividual(new_num(number), true);  
         
       })
       .on("mouseover", function(solution_time, number)
@@ -296,7 +345,7 @@ function updateMultiVis(history)
         // Tooltip
         tooltip.html( function ()
             {
-              return "Number: " + number + "; Solution Time: " + solution_time;
+              return "Number: " + new_num(number) + "; Solution Time: " + solution_time;
             })
             .style("left", function()
             {
@@ -393,10 +442,12 @@ function updateMultiVis(history)
   circlesContainer.transition()
     .style("opacity", "1")
     .attr("cx", function(solution_time, number)
-    { return xScale(number) + X_OFFSET; })
+    { 
+        return xScale(new_num(number)) + X_OFFSET; 
+    })
     .delay( function(solution_time, number)
     {
-      return number * TIME_FACTOR / (solution_time * speed_factor);
+      return new_num(number) * TIME_FACTOR / (solution_time * speed_factor);
     })
     .duration(EASE_DURATION)
     .ease("elastic");
@@ -436,7 +487,7 @@ function updateSingleVis(individual_history, solution_time)
   
   yScale = d3.scale.linear()
                 .domain([0, d3.max(individual_history)])
-                .range([0, SINGLE_SVG_HEIGHT*0.9]);
+                .range([SINGLE_SVG_HEIGHT*0.05, SINGLE_SVG_HEIGHT*0.89]);
   
   
  
@@ -449,6 +500,9 @@ function updateSingleVis(individual_history, solution_time)
                 .domain([0, FADE_IN_TIME])
                 .range(["0", "1"]);
 
+  var yAxisScale = d3.scale.ordinal()
+              .domain(d3.range(1, individual_history.length+1))
+              .rangeBands([SINGLE_SVG_HEIGHT*0.05, SINGLE_SVG_HEIGHT*0.9]);
   
     
   
@@ -471,7 +525,7 @@ function updateSingleVis(individual_history, solution_time)
               })
               .style("top", function()
               {
-                return MULTI_SVG_HEIGHT*1.255 + control_container_height + "px";
+                return MULTI_SVG_HEIGHT*1.265 + control_container_height + "px";
               });
   
   
@@ -504,7 +558,7 @@ function updateSingleVis(individual_history, solution_time)
               })
               .style("top", function()
               {
-                return MULTI_SVG_HEIGHT*1.255 + control_container_height + "px";
+                return MULTI_SVG_HEIGHT*1.265 + control_container_height + "px";
               });
   
   // Solution time transition
@@ -520,6 +574,7 @@ function updateSingleVis(individual_history, solution_time)
   // X axis label
   singleVisContainer.append("div")
               .attr("id", "x_label")
+              .attr("class", "single_plot_label")
               .style("opacity", "0")
               .text("Time Steps")
               .style("font-size", "16px")   
@@ -549,11 +604,11 @@ function updateSingleVis(individual_history, solution_time)
       .data(individual_history).enter()
       .append("text")
       .style("opacity", "0")
-      .attr("class", "data_text")
+      .attr("class", "single_plot_label")
       .attr("x", "0")
       .attr("y", function(d, i)
       {
-        return SINGLE_SVG_HEIGHT;
+        return SINGLE_SVG_HEIGHT*0.995;
       })
       
       .text( function (number, time_step) 
@@ -572,8 +627,7 @@ function updateSingleVis(individual_history, solution_time)
           }
         }
       })
-//      .text( function (d, i) { return i; })
-      .style("font-size", "10px")
+      .style("font-size", "12px")
       .on("mouseover", function(d, i)
       { 
         current_object = d3.select(this);
@@ -616,6 +670,7 @@ function updateSingleVis(individual_history, solution_time)
   // Y axis label
   singleVisContainer.append("div")
               .attr("id", "single_y_label")
+              .attr("class", "single_plot_label")
               .style("opacity", "0")
               .text("Number")
               .style("font-size", "16px")   
@@ -636,6 +691,47 @@ function updateSingleVis(individual_history, solution_time)
   
   
   
+  //  Y label text
+  var y_axis_numbers = [];
+  var max_y = Math.ceil(individual_history.length);
+  for (var i=0; i <= max_y; i++)
+  {
+    y_axis_numbers.push(i);
+  }
+  
+  var yLabelContainer = multiSVGContainer.append("g").selectAll("text")
+      .data(y_axis_numbers).enter()
+      .append("text")
+      .style("opacity", "0")
+      .attr("class", "single_plot_label")
+      .attr("x", function() { return SINGLE_SVG_WIDTH - X_OFFSET*1.4; })
+      .attr("y", function(solution_time, number)
+      { 
+        return SINGLE_SVG_HEIGHT - yAxisScale(solution_time) - Y_OFFSET*1.1;
+      })
+      .text( function (solution_time, number) 
+      { 
+        if (d3.max(y_axis_numbers) < 100)
+        {
+          return solution_time;
+        }
+        else
+        {
+          var factor = Math.floor(d3.max(history) * 0.1);
+          
+          if (solution_time % factor == 0)
+          {
+            return solution_time;
+          }
+        }
+      })
+      .style("font-size", "12px")
+  
+  
+  // Y label text Transitions
+  xLabelContainer.transition()
+    .duration(EASE_DURATION*1.6)
+    .style("opacity", "1");
   
   
   
